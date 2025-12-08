@@ -3,261 +3,125 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Cheat Check - Pro Edition</title>
-    <style>
-        :root {
-            --bg-color: #0f172a;
-            --card-bg: #1e293b;
-            --primary: #8b5cf6;
-            --secondary: #10b981;
-            --error: #ef4444;
-            --text: #f8fafc;
-        }
-
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body {
-            font-family: sans-serif;
-            background: var(--bg-color);
-            color: var(--text);
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        .screen {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 25px;
-            text-align: center;
-        }
-
-        .active { display: flex; }
-
-        .btn {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 20px;
-            border-radius: 12px;
-            font-size: 1.1rem;
-            font-weight: bold;
-            width: 100%;
-            margin: 10px 0;
-        }
-
-        .btn-green { background: var(--secondary); }
-        .btn-red { background: var(--error); }
-        .btn-outline { background: transparent; border: 2px solid white; }
-
-        .question-box { font-size: 1.8rem; margin: 20px 0; color: #cbd5e1; }
-        .answer-reveal { font-size: 2.2rem; color: var(--secondary); margin: 20px 0; font-weight: bold; border: 3px solid; padding: 15px; border-radius: 15px; }
-
-        .player-grid { width: 100%; max-height: 40vh; overflow-y: auto; margin: 15px 0; }
-        .player-card {
-            background: var(--card-bg);
-            padding: 15px;
-            margin: 8px 0;
-            border-radius: 10px;
-            border: 2px solid transparent;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .player-card.selected { border-color: var(--error); background: #450a0a; }
-
-        .score-plus { color: #4ade80; font-weight: bold; }
-        .score-minus { color: #f87171; font-weight: bold; }
-
-        #secret-box { background: white; color: black; padding: 15px; border-radius: 10px; display: none; width: 100%; }
-    </style>
+    <title>OUTSMARTED</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
+<div class="bg-pattern"></div>
 
-    <div id="screen-setup" class="screen active">
-        <h1>Cheat Check</h1>
-        <input type="text" id="in-name" placeholder="Name..." style="width:100%; padding:15px; border-radius:10px; border:none; margin-bottom:10px;">
-        <button class="btn" onclick="addPlayer()">Hinzufügen</button>
-        <div id="setup-list"></div>
-        <button class="btn btn-green" onclick="startGame()">Start</button>
+<div class="nav-btn" onclick="toggleSideMenu()">📊</div>
+
+<div id="side-menu" class="screen side-overlay">
+    <div class="glass-card">
+        <h2>Live-Stand</h2>
+        <div id="side-score-list" class="scroll-box"></div>
+        <button class="btn btn-err" onclick="location.reload()">Spiel beenden</button>
+        <button class="btn btn-outline" onclick="toggleSideMenu()">Schließen</button>
     </div>
+</div>
 
-    <div id="screen-handover" class="screen">
-        <p>📱 Handy an:</p>
-        <h1 id="handover-target">Name</h1>
-        <button class="btn" onclick="startTurn()">Bin bereit</button>
+<div id="menu-screen" class="screen active">
+    <div class="logo-area">
+        <h1 class="logo">OUT<span>SMARTED</span></h1>
+        <p>Trust no one. Outsmart everyone.</p>
     </div>
+    <button class="btn btn-sec ripple" onclick="showScreen('config-screen')">Spiel konfigurieren</button>
+    <button class="btn" onclick="showScreen('info-screen')">Anleitung</button>
+</div>
 
-    <div id="screen-question" class="screen">
-        <div class="question-box" id="disp-q">Frage?</div>
-        <div id="choice-area" style="width:100%"></div>
-        <div id="secret-box">
-            <h3>🔒 Lösung (Nicht vorlesen!)</h3>
-            <p id="disp-a-secret" style="font-size: 1.5rem; font-weight: bold;"></p>
-            <button class="btn btn-red" onclick="closeSecret()">Gesehen</button>
+<div id="info-screen" class="screen">
+    <div class="glass-card">
+        <h2>So wird gespielt</h2>
+        <p>Ehrlich antworten oder heimlich schummeln. Die Gruppe muss entscheiden: Wahrheit oder Bluff?</p>
+        <button class="btn" onclick="showScreen('menu-screen')">Verstanden</button>
+    </div>
+</div>
+
+<div id="config-screen" class="screen">
+    <div class="glass-card config-layout">
+
+        <div class="setup-section">
+            <label class="section-label">Teilnehmer</label>
+            <div class="input-group">
+                <input type="text" id="p-input" placeholder="Name...">
+                <button class="btn-add" onclick="addP()">+</button>
+            </div>
+            <div id="config-player-list" class="mini-scroll player-list-clean"></div>
         </div>
-        <button class="btn btn-outline" id="btn-done" style="display:none" onclick="goSuspect()">Antwort laut gesagt</button>
-    </div>
 
-    <div id="screen-suspect" class="screen">
-        <h2>Wer denkt, dass du gecheatet hast?</h2>
-        <div id="sus-list" class="player-grid"></div>
-        <button class="btn" onclick="goVerify()">Auswahl bestätigen</button>
-    </div>
+        <div class="separator"></div>
 
-    <div id="screen-verify" class="screen">
-        <h1>Die richtige Antwort:</h1>
-        <div class="answer-reveal" id="disp-a-final">...</div>
-        <p>Hast du sie korrekt genannt?</p>
-        <button class="btn btn-green" onclick="finishEvaluation(true)">Ja, war richtig!</button>
-        <button class="btn btn-red" onclick="finishEvaluation(false)">Nein, leider falsch</button>
-    </div>
-
-    <div id="screen-results" class="screen">
-        <h1 id="res-title">Rundenende</h1>
-        <div id="res-list" class="player-grid"></div>
-        <button class="btn" onclick="prepNextTurn()">Nächste Runde</button>
-    </div>
-
-    <script>
-        const questData = [
-            { q: "Wie viele Bundesländer hat Deutschland?", a: "16" },
-            { q: "Was ist das chemische Symbol für Gold?", a: "Au" },
-            { q: "Welches Tier ist das größte Säugetier der Welt?", a: "Blauwal" }
-        ];
-
-        let players = [];
-        let curIdx = 0;
-        let curQ = null;
-        let cheated = false;
-        let suspects = [];
-
-        function addPlayer() {
-            const n = document.getElementById('in-name');
-            if(n.value) {
-                players.push({name: n.value, score: 0});
-                document.getElementById('setup-list').innerHTML += `<div>${n.value}</div>`;
-                n.value = '';
-            }
-        }
-
-        function startGame() {
-            if(players.length < 2) return;
-            prepNextTurn();
-        }
-
-        function prepNextTurn() {
-            curQ = questData[Math.floor(Math.random()*questData.length)];
-            cheated = false;
-            suspects = [];
-            showScreen('screen-handover');
-            document.getElementById('handover-target').innerText = players[curIdx].name;
-        }
-
-        function startTurn() {
-            showScreen('screen-question');
-            document.getElementById('disp-q').innerText = curQ.q;
-            document.getElementById('btn-done').style.display = 'none';
-            document.getElementById('secret-box').style.display = 'none';
-            
-            const btns = [
-                `<button class="btn" onclick="doCheat()">Cheat</button>`,
-                `<button class="btn btn-green" onclick="noCheat()">Kein Cheat</button>`
-            ];
-            btns.sort(() => Math.random() - 0.5);
-            document.getElementById('choice-area').innerHTML = btns.join('') + `<p style='opacity:0.5'>Buttons sind zufällig angeordnet!</p>`;
-            document.getElementById('choice-area').style.display = 'block';
-        }
-
-        function doCheat() {
-            cheated = true;
-            document.getElementById('choice-area').style.display = 'none';
-            document.getElementById('disp-a-secret').innerText = curQ.a;
-            document.getElementById('secret-box').style.display = 'block';
-        }
-
-        function closeSecret() {
-            document.getElementById('secret-box').style.display = 'none';
-            document.getElementById('btn-done').style.display = 'block';
-        }
-
-        function noCheat() {
-            cheated = false;
-            document.getElementById('choice-area').style.display = 'none';
-            document.getElementById('btn-done').style.display = 'block';
-        }
-
-        function goSuspect() {
-            showScreen('screen-suspect');
-            const list = document.getElementById('sus-list');
-            list.innerHTML = '';
-            players.forEach((p, i) => {
-                if(i !== curIdx) {
-                    const d = document.createElement('div');
-                    d.className = 'player-card';
-                    d.innerText = p.name;
-                    d.onclick = () => d.classList.toggle('selected');
-                    list.appendChild(d);
-                }
-            });
-        }
-
-        function goVerify() {
-            // Speichere die gewählten Verdächtigen
-            suspects = [];
-            document.querySelectorAll('#sus-list .selected').forEach(el => {
-                suspects.push(players.findIndex(p => p.name === el.innerText));
-            });
-            showScreen('screen-verify');
-            document.getElementById('disp-a-final').innerText = curQ.a;
-        }
-
-        function finishEvaluation(wasCorrect) {
-            let roundDiff = players.map(() => 0);
-            
-            // Logik
-            // 1. War die Antwort richtig? (Nur Punkte wenn ehrlich)
-            if(wasCorrect && !cheated) roundDiff[curIdx] += 2;
-
-            // 2. Verdacht-Check
-            suspects.forEach(pIdx => {
-                if(cheated) {
-                    roundDiff[pIdx] += 2; // Richtig vermutet
-                    roundDiff[curIdx] -= 1; // Als Cheater erwischt
-                } else {
-                    roundDiff[pIdx] -= 1; // Falsch beschuldigt
-                }
-            });
-
-            // Scores anwenden
-            players.forEach((p, i) => p.score += roundDiff[i]);
-
-            // Ergebnisse zeigen
-            showScreen('screen-results');
-            document.getElementById('res-title').innerText = cheated ? "Cheater-Runde!" : "Ehrliche Runde!";
-            const list = document.getElementById('res-list');
-            list.innerHTML = players.map((p, i) => `
-                <div class="player-card">
-                    <span>${p.name}</span>
-                    <span class="${roundDiff[i]>=0?'score-plus':'score-minus'}">
-                        ${roundDiff[i]>=0?'+':''}${roundDiff[i]} (Total: ${p.score})
-                    </span>
+        <div class="setup-section settings-grid">
+            <div class="setting-item">
+                <label class="section-label">Modus</label>
+                <div class="flex-row">
+                    <select id="game-mode">
+                        <option value="rounds">Runden</option>
+                        <option value="points">Punkte</option>
+                    </select>
+                    <input type="number" id="game-limit" value="5">
                 </div>
-            `).join('');
+            </div>
 
-            curIdx = (curIdx + 1) % players.length;
-        }
+            <div class="setting-item">
+                <label class="section-label">Schwierigkeit</label>
+                <select id="diff-select">
+                    <option value="1">Level 1: Kids</option>
+                    <option value="2">Level 2: Easy</option>
+                    <option value="3" selected>Level 3: Normal</option>
+                    <option value="4">Level 4: Hard</option>
+                    <option value="5">Level 5: Genie</option>
+                </select>
+            </div>
+        </div>
 
-        function showScreen(id) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
-        }
-    </script>
+        <button class="btn btn-sec ripple main-start" onclick="startActualGame()">Launch Match</button>
+    </div>
+</div>
+
+<div id="game-handover" class="screen">
+    <p>📱 Übergabe an</p>
+    <h1 id="h-target" class="glow-text"></h1>
+    <button class="btn btn-sec ripple" onclick="runTurn()">Ich bin bereit</button>
+</div>
+
+<div id="game-question" class="screen">
+    <div class="glass-card wide-card">
+        <h2 id="q-text"></h2>
+        <div id="game-actions"></div>
+        <div id="secret-info" class="privacy-screen" style="display:none">
+            <p id="a-secret"></p>
+            <button class="btn btn-err" onclick="confirmSecret()">Verstanden</button>
+        </div>
+        <button id="btn-done" class="btn btn-outline" style="display:none" onclick="goSus()">Laut geantwortet</button>
+    </div>
+</div>
+
+<div id="game-suspect" class="screen">
+    <h3>Wer verdächtigt dich?</h3>
+    <div id="sus-list" class="scroll-box grid-list"></div>
+    <button class="btn btn-sec ripple" onclick="goVerify()">Bestätigen</button>
+</div>
+
+<div id="game-verify" class="screen">
+    <div class="glass-card">
+        <p>Richtige Lösung:</p>
+        <h1 id="a-verify" class="solution-text"></h1>
+        <div class="flex-row" style="margin-top:20px;">
+            <button class="btn btn-sec ripple" onclick="finalize(true)">Richtig</button>
+            <button class="btn btn-err ripple" onclick="finalize(false)">Falsch</button>
+        </div>
+    </div>
+</div>
+
+<div id="game-result" class="screen">
+    <div class="glass-card">
+        <h2 id="res-msg"></h2>
+        <div id="res-list" class="scroll-box"></div>
+        <button class="btn btn-sec" onclick="nextRoundCheck()">Weiter</button>
+    </div>
+</div>
+
+<script src="script.js"></script>
 </body>
 </html>
