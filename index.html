@@ -3,280 +3,102 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Cheat Check - Group Game</title>
-    <style>
-        :root {
-            --bg-color: #121212;
-            --card-bg: #1e1e1e;
-            --primary: #bb86fc;
-            --secondary: #03dac6;
-            --error: #cf6679;
-            --text: #ffffff;
-            --cheat-btn: #3700b3;
-            --no-cheat-btn: #018786;
-        }
-
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body {
-            font-family: 'Segoe UI', Roboto, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text);
-            margin: 0;
-            overflow: hidden;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
-
-        .screen {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            text-align: center;
-            background: var(--bg-color);
-        }
-
-        .active { display: flex; }
-
-        h1 { font-size: 2rem; margin-bottom: 10px; }
-        p { font-size: 1.2rem; opacity: 0.9; }
-
-        .btn {
-            background: var(--primary);
-            color: black;
-            border: none;
-            padding: 20px 40px;
-            border-radius: 15px;
-            font-size: 1.2rem;
-            font-weight: bold;
-            cursor: pointer;
-            width: 80%;
-            margin: 10px 0;
-            transition: transform 0.1s;
-        }
-
-        .btn:active { transform: scale(0.95); }
-
-        /* Game UI Elements */
-        .question-text { font-size: 1.8rem; font-weight: bold; margin: 30px 0; color: var(--primary); }
-        .button-row { display: flex; width: 100%; gap: 10px; justify-content: center; }
-        .half-btn { width: 45% !important; }
-
-        .cheat-btn { background: var(--cheat-btn); color: white; }
-        .no-cheat-btn { background: var(--no-cheat-btn); color: white; }
-        
-        /* Players Selection List */
-        .player-list { width: 100%; max-height: 50vh; overflow-y: auto; margin: 20px 0; }
-        .player-item {
-            padding: 15px;
-            margin: 5px;
-            background: var(--card-bg);
-            border-radius: 10px;
-            border: 2px solid transparent;
-        }
-        .player-item.selected { border-color: var(--error); background: #b00020; }
-
-        /* Score Table */
-        .score-row { display: flex; justify-content: space-between; width: 80%; padding: 10px; border-bottom: 1px solid #333; }
-        .gold { color: gold; font-weight: bold; }
-        
-        #cheat-info-box {
-            background: #fff;
-            color: #000;
-            padding: 20px;
-            border-radius: 15px;
-            margin-top: 10px;
-            display: none;
-        }
-    </style>
+    <title>OUTSMARTED</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
+<div class="bg-pattern"></div>
 
-    <div id="setup-screen" class="screen active">
-        <h1>Spieler festlegen</h1>
-        <input type="text" id="player-input" placeholder="Name eingeben" style="padding:15px; width:80%; border-radius:10px; border:none;">
-        <button class="btn" onclick="addPlayer()">Hinzufügen</button>
-        <div id="setup-list" style="margin-top:10px"></div>
-        <button class="btn" style="background:var(--secondary)" onclick="startGame()">Spiel starten</button>
+<div class="nav-btn" onclick="toggleSideMenu()">📊</div>
+
+<div id="side-menu" class="screen side-overlay">
+    <div class="glass-card">
+        <h2>Live-Stand</h2>
+        <div id="side-score-list" class="scroll-box"></div>
+        <button class="btn btn-err ripple" onclick="location.reload()">Spiel beenden</button>
+        <button class="btn btn-outline ripple" onclick="toggleSideMenu()">Schließen</button>
     </div>
+</div>
 
-    <div id="handover-screen" class="screen">
-        <p>📱 Bitte Handy an</p>
-        <h1 id="target-player-name">Name</h1>
-        <p>übergeben!</p>
-        <button class="btn" onclick="showQuestion()">Ich bin bereit</button>
+<div id="menu-screen" class="screen active">
+    <div class="logo-area">
+        <h1 class="logo">OUT<span>SMARTED</span></h1>
+        <p>Traue niemandem. Überliste alle.</p>
     </div>
+    <div class="menu-action-area">
+        <button class="btn btn-sec ripple" onclick="showScreen('config-screen')">Spiel konfigurieren</button>
+        <button class="btn ripple" onclick="showScreen('info-screen')">Spielanleitung</button>
+        <button class="btn ripple" onclick="showScreen('score-info-screen')">Punktesystem</button>
+    </div>
+</div>
 
-    <div id="game-screen" class="screen">
-        <p id="current-player-label"></p>
-        <div class="question-text" id="question-display">Frage wird geladen...</div>
-        
-        <div class="button-row" id="choice-buttons">
+<div id="info-screen" class="screen">
+    <div class="glass-card scroll-info">
+        <h2>Spielanleitung</h2>
+        <p><strong>Ablauf:</strong> Reihum erhält jeder das Handy. Es erscheint eine Quizfrage.</p>
+        <p><strong>Aktion:</strong> Beantworte ehrlich oder nutze den "Cheat". Antworte immer laut.</p>
+        <p><strong>Ziel:</strong> Die Gruppe rät, ob du ehrlich warst. Sammle Punkte durch Bluffen oder Wissen!</p>
+        <button class="btn ripple" onclick="showScreen('menu-screen')">Verstanden</button>
+    </div>
+</div>
+
+<div id="score-info-screen" class="screen">
+    <div class="glass-card scroll-info">
+        <h2>Punktesystem</h2>
+        <div class="score-block">
+            <ul>
+                <li>🌟 Ehrlich & Richtig: +3</li>
+                <li>💔 Ehrlich & Falsch: -3</li>
+                <li>🤫 Cheat Erfolg: +1</li>
+                <li>🔍 Lügner entlarvt: +1</li>
+            </ul>
+        </div>
+        <button class="btn ripple" onclick="showScreen('menu-screen')">Zurück</button>
+    </div>
+</div>
+
+<div id="config-screen" class="screen">
+    <div class="glass-card config-layout">
+        <div class="setup-section">
+            <label class="section-label">Teilnehmer</label>
+            <div class="add-player-row">
+                <input type="text" id="p-input" placeholder="Name eingeben...">
+                <button class="btn-add ripple" onclick="addP()">+</button>
             </div>
-
-        <div id="cheat-info-box">
-            <h3>🔒 Geheiminfo</h3>
-            <p id="cheat-answer-text"></p>
-            <button class="btn" style="width:100%" onclick="hideCheat()">Verstanden</button>
+            <div id="config-player-list" class="mini-scroll player-list-clean"></div>
         </div>
 
-        <button class="btn" id="next-to-suspect" style="display:none; background:gray" onclick="showSuspectScreen()">Antwort gegeben → Weiter</button>
-    </div>
+        <div class="separator"></div>
 
-    <div id="suspect-screen" class="screen">
-        <h1>Wer zweifelt an dir?</h1>
-        <p>Wähle alle Spieler aus, die glauben, dass du gecheatet hast.</p>
-        <div id="suspect-list" class="player-list"></div>
-        <button class="btn" onclick="evaluateRound()">Auswahl bestätigen</button>
-    </div>
-
-    <div id="result-screen" class="screen">
-        <h1 id="result-status">Richtig!</h1>
-        <p id="result-summary"></p>
-        <div id="round-scores" style="margin: 20px 0;"></div>
-        <button class="btn" onclick="nextRound()">Nächste Runde</button>
-        <button class="btn" style="background:none; color:white; border:1px solid white;" onclick="showLeaderboard()">Rangliste</button>
-    </div>
-
-    <div id="leaderboard-screen" class="screen">
-        <h1>Aktueller Stand</h1>
-        <div id="leaderboard-list" class="player-list"></div>
-        <button class="btn" onclick="closeLeaderboard()">Zurück</button>
-    </div>
-
-    <script>
-        // --- KONFIGURATION: FRAGEN HIER HINZUFÜGEN ---
-        const questions = [
-            { q: "Wie viele Zähne hat ein erwachsener Mensch?", a: "32" },
-            { q: "Was ist die Hauptstadt von Kasachstan?", a: "Astana" },
-            { q: "Welches Element hat das Symbol 'Fe'?", a: "Eisen" },
-            { q: "In welchem Jahr sank die Titanic?", a: "1912" }
-        ];
-
-        let players = [];
-        let currentPlayerIndex = 0;
-        let currentQuestion = null;
-        let selectedSuspects = [];
-        let didCheat = false;
-
-        function addPlayer() {
-            const input = document.getElementById('player-input');
-            if(input.value) {
-                players.push({ name: input.value, score: 0 });
-                document.getElementById('setup-list').innerHTML += `<div>${input.value}</div>`;
-                input.value = '';
-            }
-        }
-
-        function startGame() {
-            if(players.length < 2) return alert("Mindestens 2 Spieler!");
-            nextRound();
-        }
-
-        function nextRound() {
-            currentQuestion = questions[Math.floor(Math.random() * questions.length)];
-            didCheat = false;
-            selectedSuspects = [];
-            showScreen('handover-screen');
-            document.getElementById('target-player-name').innerText = players[currentPlayerIndex].name;
-        }
-
-        function showQuestion() {
-            showScreen('game-screen');
-            document.getElementById('current-player-label').innerText = `Du bist dran, ${players[currentPlayerIndex].name}!`;
-            document.getElementById('question-display').innerText = currentQuestion.q;
-            document.getElementById('cheat-info-box').style.display = 'none';
-            document.getElementById('next-to-suspect').style.display = 'none';
-
-            const btns = [
-                `<button class="btn half-btn cheat-btn" onclick="revealCheat()">Cheat</button>`,
-                `<button class="btn half-btn no-cheat-btn" onclick="confirmNoCheat()">Kein Cheat</button>`
-            ];
-            if(Math.random() > 0.5) btns.reverse();
-            document.getElementById('choice-buttons').innerHTML = btns.join('');
-            document.getElementById('choice-buttons').style.display = 'flex';
-        }
-
-        function revealCheat() {
-            didCheat = true;
-            document.getElementById('choice-buttons').style.display = 'none';
-            document.getElementById('cheat-answer-text').innerText = currentQuestion.a;
-            document.getElementById('cheat-info-box').style.display = 'block';
-        }
-
-        function hideCheat() {
-            document.getElementById('cheat-info-box').style.display = 'none';
-            document.getElementById('next-to-suspect').style.display = 'block';
-        }
-
-        function confirmNoCheat() {
-            didCheat = false;
-            document.getElementById('choice-buttons').style.display = 'none';
-            document.getElementById('next-to-suspect').style.display = 'block';
-        }
-
-        function showSuspectScreen() {
-            showScreen('suspect-screen');
-            const list = document.getElementById('suspect-list');
-            list.innerHTML = '';
-            players.forEach((p, idx) => {
-                if(idx !== currentPlayerIndex) {
-                    const div = document.createElement('div');
-                    div.className = 'player-item';
-                    div.innerText = p.name;
-                    div.onclick = () => {
-                        div.classList.toggle('selected');
-                    };
-                    div.id = `sus-player-${idx}`;
-                    list.appendChild(div);
-                }
-            });
-        }
-
-        function evaluateRound() {
-            const items = document.querySelectorAll('.player-item');
-            let selectedIndices = [];
-            items.forEach((item, i) => {
-                if(item.classList.contains('selected')) {
-                    // Wir müssen den echten Index finden (ohne den aktiven Spieler)
-                    let realIdx = players.findIndex(p => p.name === item.innerText);
-                    selectedIndices.push(realIdx);
-                }
-            });
-
-            // Logik: Wer kriegt Punkte?
-            // (Vereinfachte Demo-Logik: Wer richtig getippt hat kriegt Punkt, Wer beim Cheaten erwischt wurde verliert Punkt)
-            let resultText = didCheat ? "Du hast GECHEATET!" : "Du warst EHRLICH!";
-            document.getElementById('result-status').innerText = resultText;
-            
-            // Spieler-Index weiterschalten
-            currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
-            showScreen('result-screen');
-        }
-
-        function showLeaderboard() {
-            showScreen('leaderboard-screen');
-            const list = document.getElementById('leaderboard-list');
-            const sorted = [...players].sort((a,b) => b.score - a.score);
-            list.innerHTML = sorted.map((p, i) => `
-                <div class="score-row ${i===0?'gold':''}">
-                    <span>${i+1}. ${p.name}</span>
-                    <span>${p.score} Pkt</span>
+        <div class="setup-section settings-grid">
+            <div class="setting-item">
+                <label class="section-label">Modus & Ziel</label>
+                <div class="flex-row">
+                    <select id="game-mode">
+                        <option value="rounds">Runden</option>
+                        <option value="points">Punkte</option>
+                    </select>
+                    <input type="number" id="game-limit" value="5">
                 </div>
-            `).join('');
-        }
+            </div>
 
-        function closeLeaderboard() { showScreen('result-screen'); }
+            <div class="setting-item">
+                <label class="section-label">Schwierigkeit</label>
+                <select id="diff-select">
+                    <option value="1">Kids</option><option value="2">Easy</option><option value="3" selected>Normal</option><option value="4">Hard</option><option value="5">Genius</option>
+                </select>
+            </div>
+        </div>
+        <button class="btn btn-sec ripple main-start" onclick="startActualGame()">Launch Match</button>
+    </div>
+</div>
 
-        function showScreen(id) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
-        }
-    </script>
+<div id="game-handover" class="screen"><p>📱 Übergabe an</p><h1 id="h-target" class="glow-text"></h1><button class="btn btn-sec ripple" onclick="runTurn()">Ich bin bereit</button></div>
+<div id="game-question" class="screen"><div class="glass-card wide-card"><h2 id="q-text"></h2><div id="game-actions"></div><div id="secret-info" class="privacy-screen" style="display:none"><p id="a-secret"></p><button class="btn btn-err ripple" onclick="confirmSecret()">Verstanden</button></div><button id="btn-done" class="btn btn-outline ripple" style="display:none" onclick="goSus()">Geantwortet</button></div></div>
+<div id="game-suspect" class="screen"><h3>Zweifel?</h3><div id="sus-list" class="scroll-box grid-list"></div><button class="btn btn-sec ripple" onclick="goVerify()">Bestätigen</button></div>
+<div id="game-verify" class="screen"><div class="glass-card"><p>Lösung:</p><h1 id="a-verify" class="solution-text"></h1><div class="flex-row"><button class="btn btn-sec ripple" onclick="finalize(true)">Richtig</button><button class="btn btn-err ripple" onclick="finalize(false)">Falsch</button></div></div></div>
+<div id="game-result" class="screen"><div class="glass-card"><h2 id="res-msg"></h2><div id="res-list" class="scroll-box"></div><button class="btn btn-sec ripple" onclick="nextRoundCheck()">Weiter</button></div></div>
+
+<script src="script.js"></script>
 </body>
 </html>
