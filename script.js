@@ -443,7 +443,9 @@ const questionPool = [
     {"q": "Wie heißt die Schrift der Maya?", "a": "Maya-Glyphen", "d": 5},
     {"q": "Wie heißt das bisher einzige bekannte Ozeanplanet-Kandidatensystem?", "a": "Kepler-22b", "d": 5}
 ];
-const bluffTexts = ["Warte ab.", "Gleich geht's weiter.", "Kein Cheat gewählt.", "Pokerface!"];
+
+const bluffTexts = ["Bleib konzentriert.", "Keine Mimik zeigen.", "Denk an den Sieg.", "Breathe in, breathe out."];
+
 let players = [], usedQ = [], curQ = null, curIdx = 0, currentRound = 1, cheated = false, config = {}, suspectsIndices = [];
 
 function showScreen(id) {
@@ -475,7 +477,7 @@ window.removeP = function(index) {
 
 function renderPlayerList() {
     document.getElementById('config-player-list').innerHTML = players.map((p, i) =>
-        `<div class="entry"><span>${p.name}</span><span class="delete-btn" onclick="removeP(${i})">×</span></div>`).join('');
+        `<div class="entry"><span>${p.name}</span><span style="color:var(--error);cursor:pointer" onclick="removeP(${i})">×</span></div>`).join('');
 }
 
 window.startActualGame = function() {
@@ -496,7 +498,7 @@ function nextStep() {
 window.runTurn = function() {
     showScreen('game-question'); cheated = false;
     document.getElementById('q-text').innerText = curQ.q;
-    document.getElementById('game-actions').innerHTML = `<button class="btn" onclick="actCheat()">Cheat</button><button class="btn btn-sec" onclick="actEhrlich()">Kein Cheat</button>`;
+    document.getElementById('game-actions').innerHTML = `<button class="btn ripple" onclick="actCheat()">Cheat</button><button class="btn btn-sec ripple" onclick="actEhrlich()">Kein Cheat</button>`;
     document.getElementById('btn-done').style.display = 'none';
     document.getElementById('secret-info').style.display = 'none';
 }
@@ -524,7 +526,7 @@ window.goSus = function() {
     players.forEach((p, i) => {
         if(i !== curIdx) {
             const d = document.createElement('div'); d.className = 'entry'; d.innerText = p.name;
-            d.onclick = () => d.classList.toggle('selected-item');
+            d.onclick = () => { d.style.border = d.style.border ? "" : "2px solid var(--error)"; d.classList.toggle('selected-item'); };
             l.appendChild(d);
         }
     });
@@ -532,7 +534,7 @@ window.goSus = function() {
 
 window.goVerify = function() {
     suspectsIndices = [];
-    document.querySelectorAll('#sus-list .entry.selected-item').forEach(item => {
+    document.querySelectorAll('#sus-list .selected-item').forEach(item => {
         suspectsIndices.push(players.findIndex(p => p.name === item.innerText));
     });
     showScreen('game-verify');
@@ -551,18 +553,11 @@ window.finalize = function(wasRichtig) {
     players.forEach((p, i) => p.score += diffs[i]);
     showScreen('game-result');
     document.getElementById('res-msg').innerText = cheated && suspectsIndices.length ? "Erwischt!" : "Runde beendet!";
-    document.getElementById('res-list').innerHTML = players.map((p, i) => `
-        <div class="entry">
-            <span>${p.name}</span>
-            <span style="font-weight:bold; color:${diffs[i]>=0?'var(--secondary)':'var(--error)'}">
-                ${diffs[i]>=0?'+':''}${diffs[i]} (${p.score} Pkt)
-            </span>
-        </div>`).join('');
-    curIdx = (curIdx + 1) % players.length;
-    if (curIdx === 0) currentRound++;
+    document.getElementById('res-list').innerHTML = players.map((p, i) => `<div class='entry'><span>${p.name}</span><span>${diffs[i]>=0?'+':''}${diffs[i]} (${p.score} Pkt)</span></div>`).join('');
+    curIdx = (curIdx + 1) % players.length; if (curIdx === 0) currentRound++;
 }
 
 window.nextRoundCheck = function() {
     let over = (config.mode === 'rounds' && currentRound > config.limit) || (config.mode === 'points' && players.some(p => p.score >= config.limit));
-    if(over) { alert("Spiel vorbei!"); location.reload(); } else { nextStep(); }
+    if(over) { alert("Spiel beendet!"); location.reload(); } else { nextStep(); }
 }
