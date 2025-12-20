@@ -444,21 +444,14 @@ const questionPool = [
     {"q": "Wie heißt das bisher einzige bekannte Ozeanplanet-Kandidatensystem?", "a": "Kepler-22b", "d": 5}
 ];
 
-const bluffTexts = ["Bleib konzentriert.", "Keine Mimik zeigen.", "Denk an den Sieg.", "Breathe in, breathe out."];
+const bluffTexts = ["Atme tief durch.", "Keine Emotionen zeigen.", "Guck sie einfach an.", "Tu so als wäre es leicht."];
 
-let players = [], usedQ = [], curQ = null, curIdx = 0, currentRound = 1, cheated = false, config = {}, suspectsIndices = [];
+let players = [], usedQ = [], curQ = null, curIdx = 0, currentRound = 1;
+let cheated = false, config = {}, suspectsIndices = [];
 
 function showScreen(id) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById(id).classList.add('active');
-}
-
-function toggleSideMenu() {
-    const m = document.getElementById('side-menu');
-    m.classList.toggle('active');
-    if(m.classList.contains('active')) {
-        document.getElementById('side-score-list').innerHTML = players.map(p => `<div class='entry'><span>${p.name}</span><span>${p.score} Pkt</span></div>`).join('');
-    }
 }
 
 window.addP = function() {
@@ -470,63 +463,79 @@ window.addP = function() {
     }
 }
 
-window.removeP = function(index) {
-    players.splice(index, 1);
-    renderPlayerList();
-}
-
 function renderPlayerList() {
     document.getElementById('config-player-list').innerHTML = players.map((p, i) =>
-        `<div class="entry"><span>${p.name}</span><span style="color:var(--error);cursor:pointer" onclick="removeP(${i})">×</span></div>`).join('');
+        `<div class="entry">
+            <span>👤 ${p.name}</span>
+            <span style="color:var(--error);cursor:pointer;font-weight:bold;padding:5px;" onclick="players.splice(${i},1);renderPlayerList()">×</span>
+        </div>`).join('');
 }
 
 window.startActualGame = function() {
-    if(players.length < 2) return alert("Min. 2 Spieler!");
-    config = { mode: document.getElementById('game-mode').value, limit: parseInt(document.getElementById('game-limit').value), diff: parseInt(document.getElementById('diff-select').value) };
+    if(players.length < 2) return alert("Füge mindestens 2 Spieler hinzu!");
+    config = {
+        mode: document.getElementById('game-mode').value,
+        limit: parseInt(document.getElementById('game-limit').value),
+        diff: parseInt(document.getElementById('diff-select').value)
+    };
+    curIdx = 0;
+    currentRound = 1;
+    usedQ = [];
     nextStep();
 }
 
 function nextStep() {
-    let possible = questionPool.filter(q => q.d == config.diff && !usedQ.includes(q));
+    let possible = questionPool.filter(q => q.d == config.diff && !usedQ.includes(q.q));
     if(!possible.length) { usedQ = []; possible = questionPool.filter(q => q.d == config.diff); }
+
     curQ = possible[Math.floor(Math.random()*possible.length)];
-    usedQ.push(curQ);
+    usedQ.push(curQ.q);
+
     showScreen('game-handover');
     document.getElementById('h-target').innerText = players[curIdx].name;
 }
 
 window.runTurn = function() {
-    showScreen('game-question'); cheated = false;
+    showScreen('game-question');
+    cheated = false;
+
     document.getElementById('q-text').innerText = curQ.q;
-    document.getElementById('game-actions').innerHTML = `<button class="btn ripple" onclick="actCheat()">Cheat</button><button class="btn btn-sec ripple" onclick="actEhrlich()">Kein Cheat</button>`;
-    document.getElementById('btn-done').style.display = 'none';
     document.getElementById('secret-info').style.display = 'none';
+
+    const actionBox = document.getElementById('game-actions');
+    actionBox.style.display = 'flex'; // Sicherstellen, dass Buttons wieder da sind
+    actionBox.innerHTML = `
+        <button class="btn btn-outline" onclick="actCheat()">🎭 CHEATEN</button>
+        <button class="btn btn-outline" onclick="actEhrlich()">😇 EHRLICH BLEIBEN</button>
+    `;
 }
 
 window.actCheat = function() {
-    cheated = true; document.getElementById('a-secret').innerText = curQ.a;
+    cheated = true;
+    document.getElementById('a-secret').innerText = "Lösung: " + curQ.a;
     document.getElementById('game-actions').style.display = 'none';
     document.getElementById('secret-info').style.display = 'block';
 }
 
 window.actEhrlich = function() {
-    cheated = false; document.getElementById('a-secret').innerText = bluffTexts[Math.floor(Math.random()*bluffTexts.length)];
+    cheated = false;
+    document.getElementById('a-secret').innerText = bluffTexts[Math.floor(Math.random()*bluffTexts.length)];
     document.getElementById('game-actions').style.display = 'none';
     document.getElementById('secret-info').style.display = 'block';
 }
 
 window.confirmSecret = function() {
-    document.getElementById('secret-info').style.display = 'none';
-    document.getElementById('btn-done').style.display = 'block';
-}
-
-window.goSus = function() {
     showScreen('game-suspect');
-    const l = document.getElementById('sus-list'); l.innerHTML = '';
+    const l = document.getElementById('sus-list');
+    l.innerHTML = '';
+
     players.forEach((p, i) => {
         if(i !== curIdx) {
-            const d = document.createElement('div'); d.className = 'entry'; d.innerText = p.name;
-            d.onclick = () => { d.style.border = d.style.border ? "" : "2px solid var(--error)"; d.classList.toggle('selected-item'); };
+            const d = document.createElement('div');
+            d.className = 'btn btn-outline';
+            d.style.justifyContent = 'flex-start';
+            d.innerText = "👤 " + p.name;
+            d.onclick = () => d.classList.toggle('selected-item');
             l.appendChild(d);
         }
     });
@@ -534,30 +543,61 @@ window.goSus = function() {
 
 window.goVerify = function() {
     suspectsIndices = [];
-    document.querySelectorAll('#sus-list .selected-item').forEach(item => {
-        suspectsIndices.push(players.findIndex(p => p.name === item.innerText));
+    document.querySelectorAll('.selected-item').forEach(item => {
+        const name = item.innerText.replace("👤 ", "");
+        const idx = players.findIndex(p => p.name === name);
+        suspectsIndices.push(idx);
     });
+
     showScreen('game-verify');
     document.getElementById('a-verify').innerText = curQ.a;
 }
 
 window.finalize = function(wasRichtig) {
     let diffs = players.map(() => 0);
+
     if (!cheated) {
-        if (wasRichtig) { diffs[curIdx] += 3; diffs[curIdx] += suspectsIndices.length; } else { diffs[curIdx] -= 3; }
-        suspectsIndices.forEach(idx => diffs[idx] -= 1);
+        if (wasRichtig) {
+            diffs[curIdx] += 3;
+            diffs[curIdx] += suspectsIndices.length;
+            suspectsIndices.forEach(idx => diffs[idx] -= 1);
+        } else {
+            diffs[curIdx] -= 3;
+        }
     } else {
-        if (!suspectsIndices.length) { diffs[curIdx] += 1; }
-        else { diffs[curIdx] -= suspectsIndices.length; suspectsIndices.forEach(idx => diffs[idx] += 1); }
+        if (suspectsIndices.length === 0) {
+            diffs[curIdx] += 1;
+        } else {
+            diffs[curIdx] -= (suspectsIndices.length * 2);
+            suspectsIndices.forEach(idx => diffs[idx] += 1);
+        }
     }
+
     players.forEach((p, i) => p.score += diffs[i]);
+
     showScreen('game-result');
-    document.getElementById('res-msg').innerText = cheated && suspectsIndices.length ? "Erwischt!" : "Runde beendet!";
-    document.getElementById('res-list').innerHTML = players.map((p, i) => `<div class='entry'><span>${p.name}</span><span>${diffs[i]>=0?'+':''}${diffs[i]} (${p.score} Pkt)</span></div>`).join('');
-    curIdx = (curIdx + 1) % players.length; if (curIdx === 0) currentRound++;
+    document.getElementById('res-msg').innerHTML = (cheated && suspectsIndices.length > 0) ?
+        "<span style='color:var(--error)'>ERWISCHT! 🎭</span>" : "Runde beendet!";
+
+    document.getElementById('res-list').innerHTML = players.map((p, i) => `
+        <div class='entry'>
+            <span>${p.name}</span>
+            <span style="font-weight:bold">${diffs[i]>=0?'+':''}${diffs[i]} (${p.score} Pkt)</span>
+        </div>`).join('');
 }
 
 window.nextRoundCheck = function() {
-    let over = (config.mode === 'rounds' && currentRound > config.limit) || (config.mode === 'points' && players.some(p => p.score >= config.limit));
-    if(over) { alert("Spiel beendet!"); location.reload(); } else { nextStep(); }
+    curIdx = (curIdx + 1) % players.length;
+    if (curIdx === 0) currentRound++;
+
+    let isOver = (config.mode === 'rounds' && currentRound > config.limit) ||
+        (config.mode === 'points' && players.some(p => p.score >= config.limit));
+
+    if(isOver) {
+        const winner = [...players].sort((a,b) => b.score - a.score)[0];
+        alert("SPIEL ENDE! Sieger: " + winner.name + " mit " + winner.score + " Punkten.");
+        location.reload();
+    } else {
+        nextStep();
+    }
 }
