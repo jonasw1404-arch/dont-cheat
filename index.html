@@ -3,101 +3,107 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>OUTSMARTED</title>
+    <title>Cheat Quiz Master</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <div class="bg-pattern"></div>
 
-<div class="nav-btn" onclick="toggleSideMenu()">📊</div>
-
-<div id="side-menu" class="screen side-overlay">
+<div id="screen-start" class="screen active">
     <div class="glass-card">
-        <h2>Live-Stand</h2>
-        <div id="side-score-list" class="scroll-box"></div>
-        <button class="btn btn-err ripple" onclick="location.reload()">Spiel beenden</button>
-        <button class="btn btn-outline ripple" onclick="toggleSideMenu()">Schließen</button>
-    </div>
-</div>
+        <h2>Quiz Master</h2>
 
-<div id="menu-screen" class="screen active">
-    <div class="logo-area">
-        <h1 class="logo">OUT<span>SMARTED</span></h1>
-        <p>Traue niemandem. Überliste alle.</p>
-    </div>
-    <div class="menu-action-area">
-        <button class="btn btn-sec ripple" onclick="showScreen('config-screen')">Spiel konfigurieren</button>
-        <button class="btn ripple" onclick="showScreen('info-screen')">Spielanleitung</button>
-        <button class="btn ripple" onclick="showScreen('score-info-screen')">Punktesystem</button>
-    </div>
-</div>
-
-<div id="info-screen" class="screen">
-    <div class="glass-card scroll-info">
-        <h2>Spielanleitung</h2>
-        <p><strong>Ablauf:</strong> Reihum erhält jeder das Handy. Es erscheint eine Quizfrage.</p>
-        <p><strong>Aktion:</strong> Beantworte ehrlich oder nutze den "Cheat". Antworte immer laut.</p>
-        <p><strong>Ziel:</strong> Die Gruppe rät, ob du ehrlich warst. Sammle Punkte durch Bluffen oder Wissen!</p>
-        <button class="btn ripple" onclick="showScreen('menu-screen')">Verstanden</button>
-    </div>
-</div>
-
-<div id="score-info-screen" class="screen">
-    <div class="glass-card scroll-info">
-        <h2>Punktesystem</h2>
-        <div class="score-block">
-            <ul>
-                <li>🌟 Ehrlich & Richtig: +3</li>
-                <li>💔 Ehrlich & Falsch: -3</li>
-                <li>🤫 Cheat Erfolg: +1</li>
-                <li>🔍 Lügner entlarvt: +1</li>
-            </ul>
-        </div>
-        <button class="btn ripple" onclick="showScreen('menu-screen')">Zurück</button>
-    </div>
-</div>
-
-<div id="config-screen" class="screen">
-    <div class="glass-card config-layout">
         <div class="setup-section">
-            <label class="section-label">Teilnehmer</label>
+            <span class="section-label">SPIELER HINZUFÜGEN</span>
             <div class="add-player-row">
-                <input type="text" id="p-input" placeholder="Name eingeben...">
-                <button class="btn-add ripple" onclick="addP()">+</button>
+                <input type="text" id="p-input" placeholder="Name...">
+                <button class="btn btn-primary btn-small" onclick="addP()">+</button>
             </div>
-            <div id="config-player-list" class="mini-scroll player-list-clean"></div>
+            <div id="config-player-list" class="player-list"></div>
         </div>
 
-        <div class="separator"></div>
-
-        <div class="setup-section settings-grid">
-            <div class="setting-item">
-                <label class="section-label">Modus & Ziel</label>
-                <div class="flex-row">
-                    <select id="game-mode">
-                        <option value="rounds">Runden</option>
-                        <option value="points">Punkte</option>
-                    </select>
-                    <input type="number" id="game-limit" value="5">
-                </div>
-            </div>
-
-            <div class="setting-item">
-                <label class="section-label">Schwierigkeit</label>
+        <div class="setup-section">
+            <span class="section-label">EINSTELLUNGEN</span>
+            <div class="input-stack">
+                <select id="game-mode">
+                    <option value="rounds">Modus: Runden</option>
+                    <option value="points">Modus: Zielpunkte</option>
+                </select>
+                <input type="number" id="game-limit" value="5">
                 <select id="diff-select">
-                    <option value="1">Kids</option><option value="2">Easy</option><option value="3" selected>Normal</option><option value="4">Hard</option><option value="5">Genius</option>
+                    <option value="1">⭐ Sehr Leicht</option>
+                    <option value="2">⭐⭐ Leicht</option>
+                    <option value="3" selected>⭐⭐⭐ Mittel</option>
+                    <option value="4">⭐⭐⭐⭐ Schwer</option>
+                    <option value="5">⭐⭐⭐⭐⭐ Extrem</option>
                 </select>
             </div>
         </div>
-        <button class="btn btn-sec ripple main-start" onclick="startActualGame()">Launch Match</button>
+
+        <button class="btn btn-sec" onclick="startActualGame()">SPIEL STARTEN</button>
     </div>
 </div>
 
-<div id="game-handover" class="screen"><p>📱 Übergabe an</p><h1 id="h-target" class="glow-text"></h1><button class="btn btn-sec ripple" onclick="runTurn()">Ich bin bereit</button></div>
-<div id="game-question" class="screen"><div class="glass-card wide-card"><h2 id="q-text"></h2><div id="game-actions"></div><div id="secret-info" class="privacy-screen" style="display:none"><p id="a-secret"></p><button class="btn btn-err ripple" onclick="confirmSecret()">Verstanden</button></div><button id="btn-done" class="btn btn-outline ripple" style="display:none" onclick="goSus()">Geantwortet</button></div></div>
-<div id="game-suspect" class="screen"><h3>Zweifel?</h3><div id="sus-list" class="scroll-box grid-list"></div><button class="btn btn-sec ripple" onclick="goVerify()">Bestätigen</button></div>
-<div id="game-verify" class="screen"><div class="glass-card"><p>Lösung:</p><h1 id="a-verify" class="solution-text"></h1><div class="flex-row"><button class="btn btn-sec ripple" onclick="finalize(true)">Richtig</button><button class="btn btn-err ripple" onclick="finalize(false)">Falsch</button></div></div></div>
-<div id="game-result" class="screen"><div class="glass-card"><h2 id="res-msg"></h2><div id="res-list" class="scroll-box"></div><button class="btn btn-sec ripple" onclick="nextRoundCheck()">Weiter</button></div></div>
+<div id="game-handover" class="screen">
+    <div class="glass-card">
+        <p>Bitte das Handy übergeben an:</p>
+        <h1 id="h-target">Name</h1>
+        <div class="btn-group">
+            <button class="btn btn-primary" onclick="runTurn()">ICH BIN BEREIT</button>
+        </div>
+    </div>
+</div>
+
+<div id="game-question" class="screen">
+    <div class="glass-card">
+        <span class="section-label">DEINE FRAGE</span>
+        <div id="q-text" class="question-text">Frage lädt...</div>
+
+        <div id="game-actions" class="btn-group">
+        </div>
+
+        <div id="secret-info" style="display:none;">
+            <div class="secret-box">
+                <span class="section-label">GEHEIME INFO</span>
+                <div id="a-secret"></div>
+            </div>
+            <button class="btn btn-primary" onclick="confirmSecret()">VERSTANDEN</button>
+        </div>
+    </div>
+</div>
+
+<div id="game-suspect" class="screen">
+    <div class="glass-card">
+        <h2>Verdacht</h2>
+        <p>Wer glaubt, dass gecheatet wurde?</p>
+        <div id="sus-list" class="suspect-grid"></div>
+        <div class="btn-group">
+            <button class="btn btn-primary" onclick="goVerify()">FERTIG</button>
+        </div>
+    </div>
+</div>
+
+<div id="game-verify" class="screen">
+    <div class="glass-card">
+        <span class="section-label">DIE RICHTIGE ANTWORT</span>
+        <div id="a-verify" class="question-text color-sec">Antwort</div>
+        <p>War die Antwort des Spielers korrekt?</p>
+        <div class="btn-group">
+            <button class="btn btn-sec" onclick="finalize(true)">JA, WAR RICHTIG</button>
+            <button class="btn btn-err" onclick="finalize(false)">NEIN, WAR FALSCH</button>
+        </div>
+    </div>
+</div>
+
+<div id="game-result" class="screen">
+    <div class="glass-card">
+        <h2 id="res-msg">Ergebnis</h2>
+        <div id="res-list" class="player-list-results"></div>
+        <div class="btn-group">
+            <button class="btn btn-primary" onclick="nextRoundCheck()">NÄCHSTE RUNDE</button>
+        </div>
+    </div>
+</div>
 
 <script src="script.js"></script>
 </body>
